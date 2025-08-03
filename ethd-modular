@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Main ethd script - modularized version
+
+# Source core configuration
+source "$(dirname "${BASH_SOURCE[0]}")/modules/core/config.sh"
+
+# Source utility functions
+source "$(dirname "${BASH_SOURCE[0]}")/modules/utils/docker.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/modules/utils/env.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/modules/utils/root.sh"
+
+# Source command modules
+source "$(dirname "${BASH_SOURCE[0]}")/modules/commands/help.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/modules/commands/config.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/modules/commands/keys.sh"
+
+# TODO: Add more command modules
+
+# Main execution
+__me=$(basename "${BASH_SOURCE[0]}")
+if [ ! -f ~/.profile ] || ! grep -q "alias ethd" ~/.profile; then
+  __me="./$__me"
+fi
+
+# Default values
+__during_config=0
+__during_update=0
+__during_postgres=0
+__during_migrate=0
+__migrated=0
+__command=""
+__params=""
+
+# Error handling
+__handle_error() {
+  if [[ ! $- =~ e ]]; then
+    # set +e, do nothing
+    return 0
+  fi
+
+  local __exit_code=$1
+  if [ "$__exit_code" -eq 0 ]; then
+    return 0
+  fi
+
+  if [[ -n "${__handler_ran:-}" ]]; then
+    return 0
+  fi
+  __handler_ran=1
+
+  echo
+  if [ "$__exit_code" -eq 130 ]; then
+    echo "$__me terminated by user"
+  elif [ "$__during_config" -eq 1 ] && [ "$__exit_code" -eq 1 ]; then
+    echo "Canceled config wizard."
+  else
+    echo "$__me terminated with exit code $__exit_code on line $2"
+    if [ -n "${__command}" ]; then
+      echo "This happened during $__me ${__command} ${__params}"
+    fi
+  fi
+  # TODO: Add error handling logic from original script
+}
+
+trap '__handle_error $? $LINENO' ERR
+trap '__handle_error $? $LINENO' EXIT
+
+# Help function
+__full_help() {
+  echo "usage: $__me [-h|--help] <command>"
+  echo
+  echo "commands:"
+  echo "  install"
+  echo "    attempts to install Docker and Docker Compose for you"
+  echo "  config"
+  echo "    configures ${__project_name} with your choice of Ethereum clients"
+  echo "  keys ACTION [--non-interactive] [--debug]"
+  echo "    list, count, delete, import keys; their fee recipients; and gas fees"
+  echo "    Run without ACTION to get help text"
+  echo "  update [--refresh-targets] [--non-interactive] [--debug] [--trace]"
+  echo "    updates all client versions and ${__project_name} itself"
+  echo "    --refresh-targets will reset your custom build targets in ${__env_file} to defaults"
+  echo "  up|start [service-name]"
+  echo "    starts the Ethereum node, or restarts containers that had their image or"
+  echo "    configuration changed. Can also start a specific service by name"
+  echo "  down|stop [service-name]"
+  echo "    stops the Ethereum node, or a specific service by name"
+  echo "  restart [service-name]"
+  echo "    restarts the Ethereum node, or a specific service by name, a combination of down and up"
+  echo "  version"
+  echo "    prints the version(s) of currently running client(s)"
+  echo "  logs"
+  echo "    shows logs"
+  echo "  cmd <compose-command>"
+  echo "    executes an arbitrary Docker Compose command. Use \"cmd help\" to list them"
+  echo "  terminate"
+  echo "    stops the Ethereum node and destroys all data stores"
+  echo "  prune-nethermind [--non-interactive]"
+  echo "    restarts the Nethermind execution client and prunes its DB."
+  echo "  prune-besu [--non-interactive]"
+  echo "    stops the Besu execution client and prunes trie-logs."
+  echo "  prune-reth [--non-interactive]"
+  echo "    stops the Reth execution client and prunes its DB."
+  echo "  prune-history [--non-interactive]"
+  echo "    stops the execution client and prunes pre-merge history, if supported."
+  echo "  prune-lighthouse [--non-interactive]"
+  echo "    stops the Lighthouse consensus client and prunes state."
+  echo "  resync-execution"
+  echo "    removes the execution layer database and forces a resync."
+  echo "  resync-consensus"
+  echo "    removes the consensus layer database and forces a resync."
+  echo "  space"
+  echo "    show Docker volume space usage"
+  echo "  attach-geth"
+  echo "    launches an interactive geth attach repl"
+  echo "  help"
+  echo "    print this help screen"
+  echo
+  echo "  Instead of \"--non-interactive\" you may also use the \"ETHD_FRONTEND=noninteractive\" environment variable"
+  echo
+  echo "The logs command can be appended by flags and specify the container(s). Example: "
+  echo
+  echo "  $__me logs -f --tail 50 execution"
+  echo "    shows logs only for execution service"
+  echo
+  echo "✍️ Give feedback and report issues on GitHub:"
+  echo "  * https://github.com/ethstaker/eth-docker"
+  echo "🤗 Get support on Discord:"
+  echo "  * http://discord.gg/ethstaker"
+}
+
+# Main execution logic
+if [[ "$#" -eq 0 || "$*" = "--help" || "$*" = "-h" ]]; then
+  __full_help
+  exit 0
+fi
+
+cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+
+# Use this to make sure root doesn't end up owning files
+# shellcheck disable=SC2012
+OWNER=$(ls -ld . | awk '{print $3}')
+OWNER_GROUP=$(id -gn "${OWNER}")
+
+__handle_root
+
+if [ "${OWNER}" = "root" ]; then
+  echo "Please install ${__project_name} as a non-root user."
+  exit 0
+fi
+
+__command="$1"
+shift
+__params=$*
+
+# Handle Docker and Compose checks
+# TODO: Add Docker and Compose handling logic here
+
+# Command dispatching logic
+case "$__command" in
+  help)
+    help "$@"
+    ;;
+  config)
+    config "$@"
+    ;;
+  keys)
+    keys "$@"
+    ;;
+  *)
+    echo "Unrecognized command $__command"
+    help
+    ;;
+esac

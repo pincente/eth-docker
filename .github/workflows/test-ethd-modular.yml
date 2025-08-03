@@ -1,0 +1,63 @@
+name: Test Modular ethd
+
+on:
+  push:
+    branches: [qwen-code]
+  pull_request:
+    branches: [qwen-code]
+
+jobs:
+  test-modular-ethd:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get install -y expect whiptail
+      - name: Test modular ethd basic functionality
+        run: ./modules/tests/test_basic.sh
+      - name: Test modular ethd comprehensive functionality
+        run: ./modules/tests/test_comprehensive.sh
+      - name: Test modular ethd help command
+        run: ./modules/tests/test_help.sh
+      - name: Test modular ethd config command
+        run: ./modules/tests/test_config.sh
+      - name: Test modular ethd network functions
+        run: ./modules/tests/test_network.sh
+      - name: Test modular ethd legacy functions
+        run: ./modules/tests/test_legacy.sh
+      - name: Test modular ethd execution functions
+        run: ./modules/tests/test_execution.sh
+      - name: Test modular ethd MEV functions
+        run: ./modules/tests/test_mev.sh
+      - name: Test modular ethd coinbase functions
+        run: ./modules/tests/test_coinbase.sh
+      - name: Test modular ethd graffiti functions
+        run: ./modules/tests/test_graffiti.sh
+      - name: Test modular ethd checkpoint functions
+        run: ./modules/tests/test_checkpoint.sh
+      - name: Test modular ethd grafana functions
+        run: ./modules/tests/test_grafana.sh
+      - name: Test modular ethd remote beacon functions
+        run: ./modules/tests/test_remote.sh
+      - name: Test modular ethd history expiry functions
+        run: ./modules/tests/test_history.sh
+      - name: Test modular ethd SSV client functions
+        run: ./modules/tests/test_ssv.sh
+      - name: Test modular ethd Lido keys generation functions
+        run: ./modules/tests/test_lido.sh
+      - name: Test modular ethd validator client functions
+        run: ./modules/tests/test_validator.sh
+      - name: Test modular ethd consensus client functions
+        run: ./modules/tests/test_consensus.sh
+      - name: Test modular ethd Lido Obol functions
+        run: ./modules/tests/test_obol.sh
+      - name: Test modular ethd DKG functions
+        run: ./modules/tests/test_dkg.sh
+      - name: Test modular ethd IPv6 functions
+        run: ./modules/tests/test_ipv6.sh
+      - name: Test modular ethd build functions
+        run: ./modules/tests/test_build.sh
+      - name: Test modular ethd OS functions
+        run: ./modules/tests/test_os.sh
+      - name: Test modular ethd keys command
+        run: ./modules/tests/test_keys.sh
