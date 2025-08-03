@@ -16,6 +16,7 @@ This project refactors the monolithic ETHD bash script into a modular architectu
 - [MODULARIZATION_SUMMARY.md](MODULARIZATION_SUMMARY.md) - Progress tracking
 - [FINAL_SUMMARY.md](FINAL_SUMMARY.md) - Final project summary
 - [modules/README.md](modules/README.md) - Module documentation
+- [MODULE_PATTERNS.md](MODULE_PATTERNS.md) - Implementation patterns and conventions
 
 ## Testing
 Run all tests:
@@ -31,4 +32,4 @@ Continue modularizing remaining commands:
 - `resync-*` commands
 - `attach-geth`, `keyimport`
 
-Each command follows the established pattern documented in QWEN.md.
+Each command follows the established patterns documented in MODULE_PATTERNS.md.
