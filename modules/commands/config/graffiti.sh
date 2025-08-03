@@ -4,7 +4,7 @@
 __query_graffiti() {
   # When called with --test, just print to stdout for testing
   if [ "${1:-}" = "--test" ]; then
-    echo "TODO: Implement full __query_graffiti function with whiptail UI"
+    echo "TODO: Implement full __query_graffiti function"
     echo "For now, using default graffiti for testing"
     echo "GRAFFITI=EthDocker"
     echo "DEFAULT_GRAFFITI=false"
@@ -12,7 +12,7 @@ __query_graffiti() {
   fi
   
   # When sourced, this will run the actual function
-  echo "TODO: Implement full __query_graffiti function with whiptail UI" >&2
+  echo "TODO: Implement full __query_graffiti function" >&2
   echo "For now, using default graffiti for testing" >&2
   
   # Set default graffiti for testing
